@@ -156,7 +156,8 @@ handle_info(check_window, State0) ->
     {ok, State} = code_change(nil, State0, nil),
     #state{paused = Paused, name = Name} = State,
     StrictWindow = smoosh_utils:get(Name, "strict_window", "false"),
-    FinalState = case {not Paused, smoosh_utils:in_allowed_window(Name)} of
+    {_, {HH, MM, _}} = calendar:universal_time(),
+    FinalState = case {not Paused, smoosh_utils:in_allowed_window({HH, MM}, Name)} of
         {false, false} ->
             % already in desired state
             State;

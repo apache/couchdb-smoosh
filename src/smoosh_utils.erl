@@ -15,7 +15,7 @@
 
 -export([get/2, get/3, group_pid/1, split/1, stringify/1, ignore_db/1]).
 -export([
-    in_allowed_window/1
+    in_allowed_window/2
 ]).
 
 group_pid({Shard, GroupId}) ->
@@ -60,20 +60,15 @@ ignore_db(DbName) when is_list(DbName) ->
 ignore_db(Db) ->
     ignore_db(couch_db:name(Db)).
 
-in_allowed_window(Channel) ->
+in_allowed_window(Time, Channel) ->
     From = parse_time(get(Channel, "from"), {00, 00}),
     To = parse_time(get(Channel, "to"), {24, 00}),
-    in_allowed_window(From, To).
+    in_allowed_window(Time, From, To).
 
-in_allowed_window(From, To) ->
-    {_, {HH, MM, _}} = calendar:universal_time(),
-    case From < To of
-    true ->
-        ({HH, MM} >= From) andalso ({HH, MM} < To);
-    false ->
-        ({HH, MM} >= From) orelse ({HH, MM} < To)
-    end.
-
+in_allowed_window({HH, MM}, From, To) when From < To ->
+    ({HH, MM} >= From) andalso ({HH, MM} < To);
+in_allowed_window({HH, MM}, From, To) ->
+    ({HH, MM} >= From) orelse ({HH, MM} < To).
 
 parse_time(undefined, Default) ->
     Default;
